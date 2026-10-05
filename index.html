@@ -1,0 +1,1022 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>রসের ভাবীর বাড়ি</title>
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            background-color: #000000;
+            color: #ffffff;
+            display: flex;
+            justify-content: center;
+            min-height: 100vh;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 450px;
+            background-color: #0b0c14;
+            min-height: 100vh;
+            padding-bottom: 75px;
+            position: relative;
+            overflow-x: hidden;
+        }
+
+        /* Top Bar */
+        .top-bar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 12px 14px;
+            background-color: #0b0c14;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+        }
+
+        .top-left-icon, .top-right-icons i {
+            font-size: 1.1rem;
+            color: #ffffff;
+            cursor: pointer;
+            transition: transform 0.15s;
+        }
+        .top-left-icon:active, .top-right-icons i:active {
+            transform: scale(0.85);
+        }
+
+        .top-center-title {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            font-size: 0.95rem;
+            font-weight: 700;
+            color: #ffffff;
+        }
+
+        .top-right-icons {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        /* Tab Transition */
+        .tab-view {
+            display: none;
+            opacity: 0;
+            transform: translateY(8px);
+            transition: opacity 0.25s ease, transform 0.25s ease;
+        }
+
+        .tab-view.active-view {
+            display: block;
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        /* Categories Filter */
+        .categories-container {
+            display: flex;
+            gap: 8px;
+            padding: 10px 14px 14px;
+            overflow-x: auto;
+            scrollbar-width: none;
+        }
+
+        .categories-container::-webkit-scrollbar {
+            display: none;
+        }
+
+        .chip {
+            padding: 6px 14px;
+            border-radius: 18px;
+            font-size: 0.72rem;
+            font-weight: 500;
+            white-space: nowrap;
+            cursor: pointer;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            background: #1c1d2e;
+            color: #a8aaba;
+            transition: transform 0.15s, background 0.2s;
+        }
+
+        .chip:active {
+            transform: scale(0.92);
+        }
+
+        .chip.active {
+            background: linear-gradient(135deg, #f72585 0%, #7209b7 100%);
+            color: #ffffff;
+            border: none;
+            padding: 6px 16px;
+        }
+
+        /* Feed Cards */
+        .feed {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            padding: 0 12px;
+        }
+
+        .card {
+            background: #141524;
+            border-radius: 14px;
+            overflow: hidden;
+            border: 1px solid rgba(255, 255, 255, 0.04);
+            animation: fadeIn 0.3s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Media Box (In-line Player) */
+        .thumb-wrapper {
+            position: relative;
+            width: 100%;
+            height: 220px;
+            background: #000;
+            overflow: hidden;
+        }
+
+        .thumb-image {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            position: absolute;
+            top: 0;
+            left: 0;
+            z-index: 2;
+            transition: opacity 0.6s ease;
+        }
+
+        .thumb-image.hidden {
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        /* ইন-লাইন ভিডিও এলিমেন্ট */
+        .media-video {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            position: absolute;
+            top: 0;
+            left: 0;
+            z-index: 1;
+            background: #000;
+        }
+
+        /* ট্রায়াল মোড থেকে ফুল ভিডিও মোডে গেলে */
+        .thumb-wrapper.playing-full .media-video {
+            z-index: 5;
+            object-fit: contain;
+        }
+
+        .thumb-wrapper.playing-full .play-btn-circle,
+        .thumb-wrapper.playing-full .preview-badge,
+        .thumb-wrapper.playing-full .thumb-image {
+            display: none !important;
+        }
+
+        .preview-badge {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            background: rgba(0, 0, 0, 0.7);
+            color: #00d4ff;
+            border: 1px solid rgba(0, 212, 255, 0.3);
+            font-size: 0.62rem;
+            padding: 3px 8px;
+            border-radius: 6px;
+            z-index: 4;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            font-weight: 500;
+            pointer-events: none;
+        }
+
+        .play-btn-circle {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            background: rgba(0, 0, 0, 0.65);
+            border: 2px solid rgba(255, 255, 255, 0.85);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: transform 0.2s;
+            z-index: 4;
+        }
+
+        .play-btn-circle:active {
+            transform: translate(-50%, -50%) scale(0.85);
+        }
+
+        .play-btn-circle i {
+            color: #ffffff;
+            font-size: 1.1rem;
+            margin-left: 3px;
+        }
+
+        .fav-heart-btn {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            width: 34px;
+            height: 34px;
+            border-radius: 50%;
+            background: rgba(0, 0, 0, 0.55);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            border: none;
+            outline: none;
+            transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            z-index: 10;
+        }
+
+        .fav-heart-btn:active {
+            transform: scale(0.8);
+        }
+
+        .fav-heart-btn i {
+            color: #ffffff;
+            font-size: 0.95rem;
+            transition: color 0.2s ease, transform 0.25s ease;
+            pointer-events: none;
+        }
+
+        .fav-heart-btn.liked i {
+            color: #ff2a6d;
+            transform: scale(1.2);
+        }
+
+        /* Card Content */
+        .card-details {
+            padding: 12px;
+        }
+
+        .card-title {
+            font-size: 0.78rem;
+            font-weight: 500;
+            line-height: 1.45;
+            color: #f0f0f5;
+            margin-bottom: 8px;
+        }
+
+        .tag-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            background: #23253d;
+            color: #a3a6c9;
+            font-size: 0.62rem;
+            padding: 2.5px 8px;
+            border-radius: 10px;
+            margin-bottom: 10px;
+        }
+
+        .tag-dot {
+            width: 5px;
+            height: 5px;
+            border-radius: 50%;
+            background: #a3a6c9;
+        }
+
+        .meta-stats-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+
+        .views-badge {
+            background: rgba(0, 212, 255, 0.12);
+            color: #00d4ff;
+            font-size: 0.68rem;
+            font-weight: 600;
+            padding: 2px 7px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .downloads-count {
+            display: flex;
+            align-items: center;
+            gap: 3px;
+            color: #616687;
+            font-size: 0.68rem;
+        }
+
+        .actions-row {
+            display: flex;
+            gap: 8px;
+        }
+
+        .unlock-action-btn {
+            flex: 1.8;
+            background: linear-gradient(90deg, #f72585 0%, #7209b7 100%);
+            border: none;
+            color: #ffffff;
+            font-size: 0.75rem;
+            font-weight: 600;
+            padding: 9px 0;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            cursor: pointer;
+            transition: transform 0.15s, opacity 0.2s;
+        }
+
+        .unlock-action-btn:active {
+            transform: scale(0.96);
+            opacity: 0.9;
+        }
+
+        .copy-action-btn {
+            flex: 1;
+            background: #23253d;
+            border: none;
+            color: #ffffff;
+            font-size: 0.75rem;
+            font-weight: 500;
+            padding: 9px 0;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 5px;
+            cursor: pointer;
+            transition: transform 0.15s;
+        }
+
+        .copy-action-btn:active {
+            transform: scale(0.96);
+        }
+
+        .bottom-card-note {
+            text-align: center;
+            font-size: 0.65rem;
+            color: #fca311;
+            margin-top: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 4px;
+        }
+
+        /* Favorites Tab */
+        .empty-favorites {
+            text-align: center;
+            padding: 50px 20px;
+            color: #666c8d;
+        }
+        .empty-favorites i {
+            font-size: 3rem;
+            color: #23253d;
+            margin-bottom: 12px;
+        }
+
+        /* Rewards Tab */
+        .reward-section {
+            padding: 16px;
+        }
+        .coin-box {
+            background: linear-gradient(135deg, #2b1f05 0%, #151008 100%);
+            border: 1px solid #d4a017;
+            border-radius: 14px;
+            padding: 20px;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        .coin-amount {
+            font-size: 2.2rem;
+            font-weight: bold;
+            color: #ffb703;
+            margin: 8px 0;
+        }
+        .reward-task-card {
+            background: #141524;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 12px;
+            padding: 14px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+        .claim-btn {
+            background: #ffb703;
+            color: #000;
+            border: none;
+            padding: 7px 14px;
+            border-radius: 8px;
+            font-weight: bold;
+            font-size: 0.75rem;
+            cursor: pointer;
+            transition: transform 0.15s;
+        }
+        .claim-btn:active {
+            transform: scale(0.92);
+        }
+
+        /* Links Tab */
+        .links-section {
+            padding: 16px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+        .link-item {
+            background: #141524;
+            padding: 14px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            cursor: pointer;
+            transition: transform 0.15s, background 0.2s;
+        }
+        .link-item:active {
+            transform: scale(0.97);
+            background: #1c1d33;
+        }
+        .link-item-left {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        .link-item-left i {
+            font-size: 1.3rem;
+            color: #f72585;
+        }
+
+        /* Toast Popup */
+        .toast-popup {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%) translateY(-100px);
+            background: rgba(20, 23, 42, 0.95);
+            border: 1px solid #f72585;
+            color: #fff;
+            padding: 10px 18px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            z-index: 1000;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+            transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .toast-popup.show {
+            transform: translateX(-50%) translateY(0);
+        }
+
+        /* Bottom Fixed Navigation */
+        .bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 100%;
+            max-width: 450px;
+            background: #111322;
+            border-top: 1px solid rgba(255, 255, 255, 0.06);
+            display: flex;
+            justify-content: space-around;
+            padding: 8px 0 5px;
+            z-index: 100;
+        }
+
+        .nav-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 3px;
+            color: #666c8d;
+            font-size: 0.62rem;
+            cursor: pointer;
+            transition: color 0.2s, transform 0.15s;
+        }
+
+        .nav-item:active {
+            transform: scale(0.9);
+        }
+
+        .nav-item i {
+            font-size: 1rem;
+        }
+
+        .nav-item.active {
+            color: #f72585;
+        }
+
+        .nav-item .active-bar {
+            width: 12px;
+            height: 2px;
+            background-color: transparent;
+            border-radius: 2px;
+            margin-top: 1px;
+            transition: background 0.2s;
+        }
+        .nav-item.active .active-bar {
+            background-color: #f72585;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <!-- Toast Popup -->
+        <div id="toast" class="toast-popup">
+            <i class="fa-solid fa-circle-check" style="color: #00d4ff;"></i>
+            <span id="toast-text">কার্যকর হয়েছে</span>
+        </div>
+
+        <!-- Top Bar -->
+        <header class="top-bar">
+            <i class="fa-solid fa-xmark top-left-icon" onclick="playSound('click'); showToast('মেনু বন্ধ')"></i>
+            <div class="top-center-title">
+                <span>💥🌺 রসের ভাবীর বাড়ি 🎬🌺</span>
+            </div>
+            <div class="top-right-icons">
+                <i class="fa-solid fa-angle-down" onclick="playSound('click'); showToast('ফিল্টার অপশন')"></i>
+                <i class="fa-solid fa-ellipsis-vertical" onclick="playSound('click'); showToast('আরও অপশন')"></i>
+            </div>
+        </header>
+
+        <!-- 1. HOME TAB VIEW -->
+        <div id="view-home" class="tab-view active-view">
+            <!-- Categories Filter -->
+            <div class="categories-container">
+                <div class="chip active" onclick="filterCategory(this)">সব</div>
+                <div class="chip" onclick="filterCategory(this)">বাচ্চাদের ভিডিও</div>
+                <div class="chip" onclick="filterCategory(this)">Top vairal magi</div>
+            </div>
+
+            <!-- Feed List -->
+            <div class="feed">
+                
+                <!-- Card 1 -->
+                <div class="card" id="card-1">
+                    <div class="thumb-wrapper">
+                        <div class="preview-badge"><i class="fa-solid fa-bolt"></i> ট্রায়াল প্রিভিউ</div>
+
+                        <img class="thumb-image" src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=600&q=80" alt="Video 1">
+                        
+                        <!-- এখানে সরাসরি ভিডিও লিংক দেওয়া আছে -->
+                        <video class="media-video" muted loop playsinline preload="auto">
+                            <source src="https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4" type="video/mp4">
+                        </video>
+
+                        <div class="play-btn-circle" onclick="playFullVideo('card-1')">
+                            <i class="fa-solid fa-play"></i>
+                        </div>
+                        <button class="fav-heart-btn" onclick="toggleLike(this, 'card-1')" title="Like">
+                            <i class="fa-regular fa-heart"></i>
+                        </button>
+                    </div>
+                    <div class="card-details">
+                        <div class="card-title">
+                            সুমাইয়ার সেই ভাইরাল ভিডিও 🤫 সম্পুর্ন ভিডিও দেখতে নিচে UNLOCKED বাটন এ ক্লিক করুন 👇
+                        </div>
+                        <div>
+                            <div class="tag-pill">
+                                <span class="tag-dot"></span> Top vairal magi
+                            </div>
+                        </div>
+                        <div class="meta-stats-row">
+                            <div class="views-badge">
+                                <i class="fa-regular fa-eye"></i> 16.0K
+                            </div>
+                            <div class="downloads-count">
+                                <i class="fa-solid fa-download"></i> 1842
+                            </div>
+                        </div>
+                        <div class="actions-row">
+                            <button class="unlock-action-btn" onclick="unlockAndPlay('card-1', this)">
+                                <i class="fa-solid fa-lock"></i> Unlock (0/1)
+                            </button>
+                            <button class="copy-action-btn" onclick="copyLink()">
+                                <i class="fa-solid fa-link"></i> Copy
+                            </button>
+                        </div>
+                        <div class="bottom-card-note">
+                            <i class="fa-solid fa-star"></i> অ্যাড দেখে ভিডিও আনলক করুন
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Card 2 -->
+                <div class="card" id="card-2">
+                    <div class="thumb-wrapper">
+                        <div class="preview-badge"><i class="fa-solid fa-bolt"></i> ট্রায়াল প্রিভিউ</div>
+
+                        <img class="thumb-image" src="https://images.unsplash.com/photo-1517841905240-472988babdf9?w=600&q=80" alt="Video 2">
+                        
+                        <video class="media-video" muted loop playsinline preload="auto">
+                            <source src="https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerEscapes.mp4" type="video/mp4">
+                        </video>
+
+                        <div class="play-btn-circle" onclick="playFullVideo('card-2')">
+                            <i class="fa-solid fa-play"></i>
+                        </div>
+                        <button class="fav-heart-btn" onclick="toggleLike(this, 'card-2')" title="Like">
+                            <i class="fa-regular fa-heart"></i>
+                        </button>
+                    </div>
+                    <div class="card-details">
+                        <div class="card-title">
+                            নতুন টিকটক ভাইরাল ভিডিও না দেখলে পুরাই মিস 🍑সম্পুর্ন ভিডিও দেখতে নিচে UNLOCKED বাটন এ ক্লিক করুন 👇
+                        </div>
+                        <div>
+                            <div class="tag-pill">
+                                <span class="tag-dot"></span> Top vairal magi
+                            </div>
+                        </div>
+                        <div class="meta-stats-row">
+                            <div class="views-badge">
+                                <i class="fa-regular fa-eye"></i> 24.8K
+                            </div>
+                            <div class="downloads-count">
+                                <i class="fa-solid fa-download"></i> 2410
+                            </div>
+                        </div>
+                        <div class="actions-row">
+                            <button class="unlock-action-btn" onclick="unlockAndPlay('card-2', this)">
+                                <i class="fa-solid fa-lock"></i> Unlock (0/1)
+                            </button>
+                            <button class="copy-action-btn" onclick="copyLink()">
+                                <i class="fa-solid fa-link"></i> Copy
+                            </button>
+                        </div>
+                        <div class="bottom-card-note">
+                            <i class="fa-solid fa-star"></i> অ্যাড দেখে ভিডিও আনলক করুন
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+        <!-- 2. FAVORITES TAB VIEW -->
+        <div id="view-favorites" class="tab-view">
+            <div style="padding: 14px 14px 6px; font-weight: bold; font-size: 0.9rem; color: #ff2a6d;">
+                <i class="fa-solid fa-heart"></i> আপনার পছন্দের ভিডিওগুলো
+            </div>
+            <div id="favorites-feed" class="feed" style="margin-top: 10px;"></div>
+            <div id="favorites-empty" class="empty-favorites">
+                <i class="fa-regular fa-heart"></i>
+                <p>এখনও কোনো ভিডিও পছন্দ করেননি!</p>
+                <span style="font-size: 0.7rem; color: #555;">ভিডিওর লাভ বাটনে চাপ দিলে এখানে জমা হবে।</span>
+            </div>
+        </div>
+
+        <!-- 3. REWARDS TAB VIEW -->
+        <div id="view-rewards" class="tab-view">
+            <div class="reward-section">
+                <div class="coin-box">
+                    <i class="fa-solid fa-coins" style="font-size: 2.2rem; color: #ffb703;"></i>
+                    <div style="font-size: 0.75rem; color: #bbb; margin-top: 6px;">আপনার মোট জমানো কয়েন</div>
+                    <div class="coin-amount" id="total-coins">780</div>
+                    <button class="claim-btn" onclick="dailyCheckIn(this)">
+                        <i class="fa-solid fa-calendar-check"></i> দৈনিক বোনাস (+৫০ কয়েন)
+                    </button>
+                </div>
+
+                <div style="font-size: 0.85rem; font-weight: bold; margin-bottom: 12px; color: #f0f0f5;">টাস্ক সম্পন্ন করুন</div>
+
+                <div class="reward-task-card">
+                    <div>
+                        <div style="font-size: 0.8rem; font-weight: 500;">বিজ্ঞাপন দেখুন</div>
+                        <div style="font-size: 0.65rem; color: #888;">প্রতিটি বিজ্ঞাপনে ২০ কয়েন</div>
+                    </div>
+                    <button class="claim-btn" onclick="watchRewardAd()">দেখুন</button>
+                </div>
+
+                <div class="reward-task-card">
+                    <div>
+                        <div style="font-size: 0.8rem; font-weight: 500;">বন্ধুদের ইনভাইট করুন</div>
+                        <div style="font-size: 0.65rem; color: #888;">প্রতি ইনভাইটে ১০০ কয়েন</div>
+                    </div>
+                    <button class="claim-btn" onclick="copyLink(); addCoins(100)">ইনভাইট</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- 4. LINKS TAB VIEW -->
+        <div id="view-links" class="tab-view">
+            <div class="links-section">
+                <div style="font-size: 0.85rem; font-weight: bold; margin-bottom: 4px; color: #f0f0f5;">প্রয়োজনীয় লিংকসমূহ</div>
+
+                <div class="link-item" onclick="playSound('click'); showToast('চ্যানেল লিংক শীঘ্রই আসছে')">
+                    <div class="link-item-left">
+                        <i class="fa-brands fa-telegram" style="color: #0088cc;"></i>
+                        <div>
+                            <div style="font-size: 0.8rem; font-weight: 500;">অফিসিয়াল টেলিগ্রাম চ্যানেল</div>
+                            <div style="font-size: 0.65rem; color: #888;">নতুন ভিডিও সরাসরি পেতে জয়েন করুন</div>
+                        </div>
+                    </div>
+                    <i class="fa-solid fa-chevron-right" style="color: #555; font-size: 0.8rem;"></i>
+                </div>
+
+                <div class="link-item" onclick="playSound('click'); showToast('এডমিন সাপোর্ট শীঘ্রই আসছে')">
+                    <div class="link-item-left">
+                        <i class="fa-solid fa-headset" style="color: #25d366;"></i>
+                        <div>
+                            <div style="font-size: 0.8rem; font-weight: 500;">এডমিন সাপোর্ট ও সাহায্য</div>
+                            <div style="font-size: 0.65rem; color: #888;">যেকোনো প্রয়োজনে মেসেজ দিন</div>
+                        </div>
+                    </div>
+                    <i class="fa-solid fa-chevron-right" style="color: #555; font-size: 0.8rem;"></i>
+                </div>
+
+                <div class="link-item" onclick="copyLink()">
+                    <div class="link-item-left">
+                        <i class="fa-solid fa-share-nodes" style="color: #ff9800;"></i>
+                        <div>
+                            <div style="font-size: 0.8rem; font-weight: 500;">ওয়েবসাইট শেয়ার লিংক</div>
+                            <div style="font-size: 0.65rem; color: #888;">লিংক কপি করে শেয়ার করুন</div>
+                        </div>
+                    </div>
+                    <i class="fa-solid fa-copy" style="color: #555; font-size: 0.8rem;"></i>
+                </div>
+            </div>
+        </div>
+
+        <!-- Bottom Navigation -->
+        <nav class="bottom-nav">
+            <div class="nav-item active" onclick="switchTab(this, 'view-home')">
+                <i class="fa-solid fa-house"></i>
+                <span>হোম</span>
+                <div class="active-bar"></div>
+            </div>
+            <div class="nav-item" onclick="switchTab(this, 'view-favorites')">
+                <i class="fa-regular fa-heart"></i>
+                <span>পছন্দ</span>
+                <div class="active-bar"></div>
+            </div>
+            <div class="nav-item" onclick="switchTab(this, 'view-rewards')">
+                <i class="fa-solid fa-gift"></i>
+                <span>রিওয়ার্ড</span>
+                <div class="active-bar"></div>
+            </div>
+            <div class="nav-item" onclick="switchTab(this, 'view-links')">
+                <i class="fa-solid fa-link"></i>
+                <span>লিংকস</span>
+                <div class="active-bar"></div>
+            </div>
+        </nav>
+    </div>
+
+    <script>
+        // Web Audio Context সাউন্ড জেনারেটর
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+
+        function playSound(type) {
+            try {
+                if (audioCtx.state === 'suspended') audioCtx.resume();
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                osc.connect(gain);
+                gain.connect(audioCtx.destination);
+                const now = audioCtx.currentTime;
+
+                if (type === 'click') {
+                    osc.type = 'sine';
+                    osc.frequency.setValueAtTime(600, now);
+                    osc.frequency.exponentialRampToValueAtTime(300, now + 0.05);
+                    gain.gain.setValueAtTime(0.3, now);
+                    gain.gain.exponentialRampToValueAtTime(0.001, now + 0.05);
+                    osc.start(now);
+                    osc.stop(now + 0.05);
+                } else if (type === 'pop') {
+                    osc.type = 'triangle';
+                    osc.frequency.setValueAtTime(400, now);
+                    osc.frequency.exponentialRampToValueAtTime(800, now + 0.08);
+                    gain.gain.setValueAtTime(0.4, now);
+                    gain.gain.exponentialRampToValueAtTime(0.01, now + 0.08);
+                    osc.start(now);
+                    osc.stop(now + 0.08);
+                } else if (type === 'coin') {
+                    osc.type = 'sine';
+                    osc.frequency.setValueAtTime(987.77, now);
+                    osc.frequency.setValueAtTime(1318.51, now + 0.08);
+                    gain.gain.setValueAtTime(0.3, now);
+                    gain.gain.exponentialRampToValueAtTime(0.01, now + 0.3);
+                    osc.start(now);
+                    osc.stop(now + 0.3);
+                }
+            } catch (e) {}
+        }
+
+        function showToast(text) {
+            const toast = document.getElementById('toast');
+            document.getElementById('toast-text').innerText = text;
+            toast.classList.add('show');
+            setTimeout(() => { toast.classList.remove('show'); }, 2000);
+        }
+
+        // ====================================================
+        // ৩ সেকেন্ড পর থাম্বনেইল সরে গিয়ে অটোমেটিক ট্রায়াল ভিডিও প্রিভিউ
+        // ====================================================
+        const THUMBNAIL_DELAY_MS = 3000;
+
+        window.addEventListener('DOMContentLoaded', () => {
+            const cards = document.querySelectorAll('.card');
+
+            cards.forEach(card => {
+                const thumb = card.querySelector('.thumb-image');
+                const video = card.querySelector('.media-video');
+
+                if (thumb && video) {
+                    setTimeout(() => {
+                        // যদি ইতিমধ্যে ফুল প্লেয়ার চালু না থাকে তবে ট্রায়াল চলবে
+                        const wrap = card.querySelector('.thumb-wrapper');
+                        if (!wrap.classList.contains('playing-full')) {
+                            thumb.classList.add('hidden');
+                            video.play().catch(err => {
+                                console.log("Auto-play blocked or waiting interaction:", err);
+                            });
+                        }
+                    }, THUMBNAIL_DELAY_MS);
+                }
+            });
+        });
+
+        // ====================================================
+        // অন্য কোথাও না নিয়ে গিয়ে সেই কার্ডেই ফুল ভিডিও চালু করার লজিক
+        // ====================================================
+        function playFullVideo(cardId) {
+            playSound('click');
+            const card = document.getElementById(cardId);
+            const wrapper = card.querySelector('.thumb-wrapper');
+            const video = card.querySelector('.media-video');
+
+            wrapper.classList.add('playing-full');
+            video.muted = false;       // আনমিউট হবে
+            video.controls = true;    // প্লে/পজ/সিকবার কন্ট্রোল আসবে
+            video.currentTime = 0;    // শুরু থেকে বাজবে
+            video.play();
+            showToast("ভিডিও চলছে... 🎬");
+        }
+
+        // আনলক বাটন চাপলে সেই জায়গাতেই ভিডিও আনলক হয়ে প্লে হবে
+        function unlockAndPlay(cardId, btn) {
+            playSound('click');
+            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> আনলক হচ্ছে...';
+            
+            setTimeout(() => {
+                playSound('coin');
+                btn.innerHTML = '<i class="fa-solid fa-lock-open"></i> Unlocked';
+                btn.style.background = '#28a745';
+                showToast("ভিডিও আনলক সফল! শুরু হচ্ছে...");
+                playFullVideo(cardId);
+            }, 1000);
+        }
+
+        // ট্যাব সুইচিং
+        function switchTab(btn, targetViewId) {
+            playSound('click');
+            document.querySelectorAll('.bottom-nav .nav-item').forEach(item => item.classList.remove('active'));
+            btn.classList.add('active');
+
+            // ভিডিও যাতে ব্যাকগ্রাউন্ডে না বাজে সেজন্য মিউট ও পজ
+            document.querySelectorAll('.media-video').forEach(vid => {
+                vid.pause();
+            });
+
+            document.querySelectorAll('.tab-view').forEach(view => view.classList.remove('active-view'));
+            const targetView = document.getElementById(targetViewId);
+            targetView.classList.add('active-view');
+
+            if (targetViewId === 'view-favorites') renderFavorites();
+        }
+
+        // লাভ/হার্ট বাটন
+        const likedCardIds = new Set();
+        function toggleLike(btn, cardId) {
+            const icon = btn.querySelector('i');
+            btn.classList.toggle('liked');
+
+            if (btn.classList.contains('liked')) {
+                playSound('pop');
+                icon.classList.remove('fa-regular');
+                icon.classList.add('fa-solid');
+                likedCardIds.add(cardId);
+                showToast("পছন্দের তালিকায় যোগ করা হয়েছে! ❤️");
+            } else {
+                playSound('click');
+                icon.classList.remove('fa-solid');
+                icon.classList.add('fa-regular');
+                likedCardIds.delete(cardId);
+                showToast("পছন্দের তালিকা থেকে সরানো হয়েছে");
+            }
+            renderFavorites();
+        }
+
+        function renderFavorites() {
+            const container = document.getElementById('favorites-feed');
+            const emptyMsg = document.getElementById('favorites-empty');
+            container.innerHTML = '';
+
+            if (likedCardIds.size === 0) {
+                emptyMsg.style.display = 'block';
+                return;
+            }
+            emptyMsg.style.display = 'none';
+
+            likedCardIds.forEach(id => {
+                const originalCard = document.getElementById(id);
+                if (originalCard) {
+                    const clonedCard = originalCard.cloneNode(true);
+                    const favBtn = clonedCard.querySelector('.fav-heart-btn');
+                    favBtn.onclick = function(e) {
+                        e.stopPropagation();
+                        const origBtn = originalCard.querySelector('.fav-heart-btn');
+                        toggleLike(origBtn, id);
+                    };
+                    const playBtn = clonedCard.querySelector('.play-btn-circle');
+                    playBtn.onclick = function() {
+                        const wrap = clonedCard.querySelector('.thumb-wrapper');
+                        const vid = clonedCard.querySelector('.media-video');
+                        wrap.classList.add('playing-full');
+                        vid.muted = false;
+                        vid.controls = true;
+                        vid.currentTime = 0;
+                        vid.play();
+                    };
+                    container.appendChild(clonedCard);
+                }
+            });
+        }
+
+        // রিওয়ার্ড
+        let currentCoins = 780;
+        function addCoins(amount) {
+            currentCoins += amount;
+            document.getElementById('total-coins').innerText = currentCoins;
+            playSound('coin');
+        }
+
+        function dailyCheckIn(btn) {
+            playSound('coin');
+            addCoins(50);
+            btn.disabled = true;
+            btn.style.opacity = '0.6';
+            btn.innerHTML = '<i class="fa-solid fa-check"></i> ক্লেইম করা হয়েছে';
+            showToast("+৫০ কয়েন যোগ হয়েছে!");
+        }
+
+        function watchRewardAd() {
+            playSound('click');
+            showToast("বিজ্ঞাপন লোড হচ্ছে...");
+            setTimeout(() => {
+                addCoins(20);
+                showToast("বিজ্ঞাপন সম্পন্ন! +২০ কয়েন পেয়েছেন 🎁");
+            }, 1000);
+        }
+
+        function copyLink() {
+            playSound('click');
+            navigator.clipboard.writeText(window.location.href);
+            showToast("লিংক কপি হয়েছে! 📋");
+        }
+
+        function filterCategory(element) {
+            playSound('click');
+            document.querySelectorAll('.chip').forEach(el => el.classList.remove('active'));
+            element.classList.add('active');
+            showToast(`${element.innerText} ফিল্টার করা হলো`);
+        }
+    </script>
+</body>
+</html>
